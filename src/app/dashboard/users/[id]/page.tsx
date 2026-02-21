@@ -32,7 +32,7 @@ export default async function UserDetailPage(props: { params: Promise<{ id: stri
 
         // Fetch User, Auth, Cards, and Transactions in parallel to optimize TTFB
         const [userDoc, authSnap, cardsSnap, sentTxSnap, receivedTxSnap] = await Promise.all([
-            adminDb.collection('users').doc(userId).get(),
+            adminDb.collection('wallet_users').doc(userId).get(),
             fetchAuth(),
             adminDb.collection('cards').where('userId', '==', userId).get(),
             adminDb.collection('transactions').where('senderId', '==', userId).orderBy('timestamp', 'desc').limit(20).get(),
