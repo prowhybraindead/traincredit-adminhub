@@ -8,7 +8,8 @@ import { format } from 'date-fns';
 import { toggleUserStatus } from '@/app/actions/userActions';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 0; // Disable caching to ensure fresh data and prevent stuck "User Not Found" states
+export const fetchCache = 'force-no-store';
 
 export default async function UserDetailPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
