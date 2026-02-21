@@ -33,7 +33,7 @@ export default async function UserDetailPage(props: { params: Promise<{ id: stri
 
         // Fetch User, Auth, Cards, and Transactions in parallel to optimize TTFB
         const [userDoc, authSnap, cardsSnap, sentTxSnap, receivedTxSnap] = await Promise.all([
-            adminDb.collection('wallet_users').doc(userId).get(),
+            adminDb.collection('users').doc(userId).get(),
             fetchAuth(),
             adminDb.collection('cards').where('userId', '==', userId).get(),
             adminDb.collection('transactions').where('senderId', '==', userId).orderBy('timestamp', 'desc').limit(20).get(),
@@ -64,10 +64,16 @@ export default async function UserDetailPage(props: { params: Promise<{ id: stri
         }).slice(0, 20); // Keep top 20 latest
 
     } catch (error) {
-        console.error("Error fetching user data:", error);
+        console.error("Critical Error fetching user data:", error);
     }
 
     if (!user) {
+        console.error(`===== USER NOT FOUND DEBUG =====`);
+        console.error(`Requested ID: "${userId}"`);
+        console.error(`Length of ID: ${userId?.length}`);
+        console.error(`Does Auth Record Exist? ${!!authRecord}`);
+        console.error(`================================`);
+
         return (
             <ProtectedRoute allowedRoles={[AdminRole.ROOT, AdminRole.SUPER_ADMIN, AdminRole.WALLET_MANAGER]}>
                 <div className="flex flex-col items-center justify-center p-20 text-slate-400">
