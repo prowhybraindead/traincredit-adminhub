@@ -22,7 +22,7 @@ export default function LoginPage() {
             // Attempt standard Firebase login.
             // On success, AuthContext takes over and verifies admin claims.
             await signInWithEmailAndPassword(auth, email, password);
-            router.push('/');
+            router.push('/dashboard');
         } catch (err: any) {
             setError(err.message || 'Invalid credentials.');
             setLoading(false);
