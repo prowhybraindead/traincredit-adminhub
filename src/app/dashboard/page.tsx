@@ -33,8 +33,8 @@ export default async function DashboardOverview() {
             .get();
 
         recentTransactions = txSnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
+            ...doc.data(),
+            id: doc.id
         }));
 
     } catch (error) {

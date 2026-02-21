@@ -15,8 +15,8 @@ export default async function MerchantsPage() {
             .get();
 
         merchants = merchantsSnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
+            ...doc.data(),
+            id: doc.id
         }));
     } catch (error) {
         console.error("Error fetching merchants:", error);
@@ -92,8 +92,8 @@ export default async function MerchantsPage() {
                                             </td>
                                             <td className="p-4">
                                                 <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-semibold ${merchant.plan === 'premium'
-                                                        ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
-                                                        : 'bg-slate-800 text-slate-400 border border-slate-700'
+                                                    ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
+                                                    : 'bg-slate-800 text-slate-400 border border-slate-700'
                                                     }`}>
                                                     {merchant.plan ? merchant.plan.toUpperCase() : 'FREE'}
                                                 </span>

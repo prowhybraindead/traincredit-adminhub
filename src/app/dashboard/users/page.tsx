@@ -17,8 +17,8 @@ export default async function UsersPage() {
             .get();
 
         users = usersSnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
+            ...doc.data(),
+            id: doc.id
         }));
     } catch (error) {
         console.error("Error fetching users:", error);

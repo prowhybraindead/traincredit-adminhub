@@ -7,7 +7,8 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { toggleUserStatus } from '@/app/actions/userActions';
 
-export default async function UserDetailPage({ params }: { params: { id: string } }) {
+export default async function UserDetailPage(props: { params: Promise<{ id: string }> }) {
+    const params = await props.params;
     const userId = params.id;
     let user: any = null;
     let cards: any[] = [];
