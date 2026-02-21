@@ -47,7 +47,7 @@ export default function LoginPage() {
                 </div>
 
                 {/* Login Card */}
-                <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 shadow-2xl">
+                <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 shadow-2xl" style={{ transform: 'translateZ(0)', willChange: 'filter' }}>
                     <form onSubmit={handleLogin} className="space-y-6">
 
                         {error && (

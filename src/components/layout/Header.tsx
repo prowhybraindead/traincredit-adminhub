@@ -14,7 +14,7 @@ export default function Header() {
     const formattedRole = adminRole.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
 
     return (
-        <header className="h-20 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800 flex items-center justify-between px-8 sticky top-0 z-30">
+        <header className="h-20 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800 flex items-center justify-between px-8 sticky top-0 z-30" style={{ transform: 'translateZ(0)', willChange: 'filter' }}>
             <div>
                 <h2 className="text-xl font-bold text-white tracking-tight">System Overview</h2>
                 <p className="text-xs font-mono text-slate-400 mt-0.5">

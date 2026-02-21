@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 120; // Revalidate every 2 minutes to heavily cache initial load
 
 export default async function UsersPage() {
     let users: any[] = [];

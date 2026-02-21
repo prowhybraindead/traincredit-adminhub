@@ -6,7 +6,7 @@ import { Search, Store, Building2, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 120; // Revalidate every 2 minutes to heavily cache initial load
 
 export default async function MerchantsPage() {
     let merchants: any[] = [];
