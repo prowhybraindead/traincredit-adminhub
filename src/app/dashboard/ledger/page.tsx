@@ -1,12 +1,15 @@
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
-import { adminDb } from '@/lib/firebase/firebaseAdmin';
+import { adminDb, adminAuth } from '@/lib/firebase/firebaseAdmin';
+import { cookies } from 'next/headers';
 import { AdminRole } from '@/types/auth';
 import { formatCurrency, truncateId } from '@/utils/formatters';
+import RefundButton from '@/components/ledger/RefundButton';
 import { Receipt, Search, ArrowUpRight, ArrowDownRight, RefreshCcw } from 'lucide-react';
 import { format } from 'date-fns';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 120; // Revalidate every 2 minutes to heavily cache initial load
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
 
 export default async function LedgerPage() {
     let transactions: any[] = [];
@@ -24,6 +27,19 @@ export default async function LedgerPage() {
         }));
     } catch (error) {
         console.error("Error fetching ledger:", error);
+    }
+
+    // Retrieve Admin Identity for accountability logging in the Server Action
+    let adminEmail = 'unknown@admin.com';
+    try {
+        const cookieStore = await cookies();
+        const session = cookieStore.get('session')?.value;
+        if (session) {
+            const decodedClaims = await adminAuth.verifySessionCookie(session, true);
+            adminEmail = decodedClaims.email || 'unknown@admin.com';
+        }
+    } catch (e) {
+        console.log("Could not parse admin session for ledger.", e);
     }
 
     return (
@@ -129,13 +145,20 @@ export default async function LedgerPage() {
                                                     }
                                                 })()}
                                             </td>
-                                            <td className="p-4 pr-6 text-right">
+                                            <td className="p-4 pr-6 text-right flex items-center justify-end gap-2">
                                                 <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold tracking-widest uppercase border ${tx.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' :
-                                                    tx.status === 'PENDING' ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' :
-                                                        'bg-rose-500/10 text-rose-400 border-rose-500/30'
+                                                    tx.status === 'REFUNDED' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30' :
+                                                        tx.status === 'PENDING' ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' :
+                                                            'bg-rose-500/10 text-rose-400 border-rose-500/30'
                                                     }`}>
                                                     {tx.status || 'UNKNOWN'}
                                                 </span>
+                                                <RefundButton
+                                                    transactionId={tx.id}
+                                                    status={tx.status}
+                                                    amount={tx.amount || 0}
+                                                    adminEmail={adminEmail}
+                                                />
                                             </td>
                                         </tr>
                                     ))
