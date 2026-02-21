@@ -5,6 +5,9 @@ import { formatCurrency, truncateId } from '@/utils/formatters';
 import { Receipt, Search, ArrowUpRight, ArrowDownRight, RefreshCcw } from 'lucide-react';
 import { format } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function LedgerPage() {
     let transactions: any[] = [];
 

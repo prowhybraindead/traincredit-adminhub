@@ -3,6 +3,9 @@ import { formatCurrency } from '@/utils/formatters'; // We'll create this util
 import { Users, Store, Activity, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { format } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // 1. Convert to an async Server Component
 export default async function DashboardOverview() {
     let totalUsers = 0;

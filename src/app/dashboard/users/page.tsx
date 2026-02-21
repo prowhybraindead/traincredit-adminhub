@@ -6,6 +6,9 @@ import { Search, MoreVertical, ShieldAlert, ShieldCheck, Users } from 'lucide-re
 import Link from 'next/link';
 import { format } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function UsersPage() {
     let users: any[] = [];
 

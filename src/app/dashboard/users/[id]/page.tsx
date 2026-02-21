@@ -7,6 +7,9 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { toggleUserStatus } from '@/app/actions/userActions';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function UserDetailPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
     const userId = params.id;
@@ -100,10 +103,10 @@ export default async function UserDetailPage(props: { params: Promise<{ id: stri
                                 <div className="flex items-center gap-3">
                                     <h1 className="text-3xl font-black text-white tracking-tight">{user.fullName || 'Anonymous User'}</h1>
                                     <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border ${isOrphan
-                                            ? 'bg-amber-500/10 text-amber-500 border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
-                                            : isFrozen
-                                                ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.2)]'
-                                                : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
+                                        ? 'bg-amber-500/10 text-amber-500 border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
+                                        : isFrozen
+                                            ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.2)]'
+                                            : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
                                         }`}>
                                         {isOrphan ? <ShieldAlert className="w-4 h-4" /> : isFrozen ? <ShieldAlert className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
                                         {isOrphan ? 'AUTH ORPHAN' : isFrozen ? 'ACCOUNT FROZEN' : 'ACTIVE'}
@@ -127,10 +130,10 @@ export default async function UserDetailPage(props: { params: Promise<{ id: stri
                                 type="submit"
                                 disabled={isOrphan}
                                 className={`px-6 py-2.5 rounded-xl text-sm font-bold tracking-wide transition-all border ${isOrphan
-                                        ? 'bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed opacity-50'
-                                        : isFrozen
-                                            ? 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-500'
-                                            : 'bg-rose-600/10 hover:bg-rose-600 hover:text-white text-rose-500 border-rose-600/30'
+                                    ? 'bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed opacity-50'
+                                    : isFrozen
+                                        ? 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-500'
+                                        : 'bg-rose-600/10 hover:bg-rose-600 hover:text-white text-rose-500 border-rose-600/30'
                                     }`}
                             >
                                 {isOrphan ? 'ORPHAN: CANNOT MUTATE' : isFrozen ? 'UNFREEZE ACCOUNT' : 'FREEZE ACCOUNT'}
