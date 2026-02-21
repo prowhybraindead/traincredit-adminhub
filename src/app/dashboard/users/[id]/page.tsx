@@ -1,5 +1,5 @@
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
-import { adminDb } from '@/lib/firebase/firebaseAdmin';
+import { adminDb, adminAuth } from '@/lib/firebase/firebaseAdmin';
 import { AdminRole } from '@/types/auth';
 import { formatCurrency, truncateId } from '@/utils/formatters';
 import { ShieldAlert, ShieldCheck, ArrowLeft, User as UserIcon, Wallet, CreditCard, Activity, ArrowUpRight, ArrowDownRight, LayoutTemplate } from 'lucide-react';
@@ -14,14 +14,29 @@ export default async function UserDetailPage(props: { params: Promise<{ id: stri
     let cards: any[] = [];
     let transactions: any[] = [];
 
+    let authRecord: any = null;
+
     try {
-        // Fetch User, Cards, and Transactions in parallel to optimize TTFB
-        const [userDoc, cardsSnap, sentTxSnap, receivedTxSnap] = await Promise.all([
+        // Safe Auth Fetch wrapper
+        const fetchAuth = async () => {
+            try {
+                return await adminAuth.getUser(userId);
+            } catch (e) {
+                console.warn(`Auth record missing for UID [${userId}]. This is an orphaned Firestore record.`);
+                return null;
+            }
+        };
+
+        // Fetch User, Auth, Cards, and Transactions in parallel to optimize TTFB
+        const [userDoc, authSnap, cardsSnap, sentTxSnap, receivedTxSnap] = await Promise.all([
             adminDb.collection('users').doc(userId).get(),
+            fetchAuth(),
             adminDb.collection('cards').where('userId', '==', userId).get(),
             adminDb.collection('transactions').where('senderId', '==', userId).orderBy('timestamp', 'desc').limit(20).get(),
             adminDb.collection('transactions').where('receiverId', '==', userId).orderBy('timestamp', 'desc').limit(20).get(),
         ]);
+
+        authRecord = authSnap;
 
         if (userDoc.exists) {
             user = { id: userDoc.id, ...userDoc.data() };
@@ -64,6 +79,7 @@ export default async function UserDetailPage(props: { params: Promise<{ id: stri
     }
 
     const isFrozen = user.isFrozen || false;
+    const isOrphan = !authRecord;
 
     return (
         <ProtectedRoute allowedRoles={[AdminRole.ROOT, AdminRole.SUPER_ADMIN, AdminRole.WALLET_MANAGER]}>
@@ -83,12 +99,14 @@ export default async function UserDetailPage(props: { params: Promise<{ id: stri
                             <div>
                                 <div className="flex items-center gap-3">
                                     <h1 className="text-3xl font-black text-white tracking-tight">{user.fullName || 'Anonymous User'}</h1>
-                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border ${isFrozen
-                                        ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.2)]'
-                                        : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
+                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border ${isOrphan
+                                            ? 'bg-amber-500/10 text-amber-500 border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
+                                            : isFrozen
+                                                ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.2)]'
+                                                : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
                                         }`}>
-                                        {isFrozen ? <ShieldAlert className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
-                                        {isFrozen ? 'ACCOUNT FROZEN' : 'ACTIVE'}
+                                        {isOrphan ? <ShieldAlert className="w-4 h-4" /> : isFrozen ? <ShieldAlert className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
+                                        {isOrphan ? 'AUTH ORPHAN' : isFrozen ? 'ACCOUNT FROZEN' : 'ACTIVE'}
                                     </span>
                                 </div>
                                 <div className="mt-2 text-slate-400 space-y-1">
@@ -102,16 +120,20 @@ export default async function UserDetailPage(props: { params: Promise<{ id: stri
                         {/* Mutation Action */}
                         <form action={async () => {
                             "use server";
+                            if (isOrphan) return;
                             await toggleUserStatus(userId, isFrozen);
                         }}>
                             <button
                                 type="submit"
-                                className={`px-6 py-2.5 rounded-xl text-sm font-bold tracking-wide transition-all border ${isFrozen
-                                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-500'
-                                    : 'bg-rose-600/10 hover:bg-rose-600 hover:text-white text-rose-500 border-rose-600/30'
+                                disabled={isOrphan}
+                                className={`px-6 py-2.5 rounded-xl text-sm font-bold tracking-wide transition-all border ${isOrphan
+                                        ? 'bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed opacity-50'
+                                        : isFrozen
+                                            ? 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-500'
+                                            : 'bg-rose-600/10 hover:bg-rose-600 hover:text-white text-rose-500 border-rose-600/30'
                                     }`}
                             >
-                                {isFrozen ? 'UNFREEZE ACCOUNT' : 'FREEZE ACCOUNT'}
+                                {isOrphan ? 'ORPHAN: CANNOT MUTATE' : isFrozen ? 'UNFREEZE ACCOUNT' : 'FREEZE ACCOUNT'}
                             </button>
                         </form>
                     </div>
