@@ -32,17 +32,19 @@ export default async function UserDetailPage(props: { params: Promise<{ id: stri
         };
 
         // Fetch User, Auth, Cards, and Transactions in parallel to optimize TTFB
+        // Use Promise.all with individual catch blocks to prevent a missing Composite Index 
+        // on the transactions collection from crashing the entire User Profile lookup.
         const [userDoc, authSnap, cardsSnap, sentTxSnap, receivedTxSnap] = await Promise.all([
-            adminDb.collection('users').doc(userId).get(),
+            adminDb.collection('users').doc(userId).get().catch(e => { console.error("User fetched failed", e); return null; }),
             fetchAuth(),
-            adminDb.collection('cards').where('userId', '==', userId).get(),
-            adminDb.collection('transactions').where('senderId', '==', userId).orderBy('timestamp', 'desc').limit(20).get(),
-            adminDb.collection('transactions').where('receiverId', '==', userId).orderBy('timestamp', 'desc').limit(20).get(),
+            adminDb.collection('cards').where('userId', '==', userId).get().catch(e => { console.error("Cards fetch failed", e); return { docs: [] }; }),
+            adminDb.collection('transactions').where('senderId', '==', userId).orderBy('timestamp', 'desc').limit(20).get().catch(e => { console.error("Sent TX fetch failed (Missing Index?)", e); return { docs: [] }; }),
+            adminDb.collection('transactions').where('receiverId', '==', userId).orderBy('timestamp', 'desc').limit(20).get().catch(e => { console.error("Received TX fetch failed (Missing Index?)", e); return { docs: [] }; }),
         ]);
 
         authRecord = authSnap;
 
-        if (userDoc.exists) {
+        if (userDoc && userDoc.exists) {
             user = { id: userDoc.id, ...userDoc.data() };
         }
 
